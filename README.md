@@ -7,7 +7,7 @@ Medieval Server MailBot
   * [X] events folder 
     * [ ] ready
     * [ ] message
-     * [ ] split emit a dm message as "dmMessage"
+     * [X] split emit a dm message as "dmMessage"
 
 # Functionality 
 * [ ] It can sent / create the threads into the staff server.
@@ -18,12 +18,10 @@ Medieval Server MailBot
 
  - type - Array of SnippetData
 
-  -  SnippetData {
+  -  SnippetData
 
     * name: string
 
     * description: string max = 2048
 
     * id: string
-
-  }
