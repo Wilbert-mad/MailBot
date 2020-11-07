@@ -5,8 +5,8 @@ class ReadyEvent extends BaseEvent {
     super('ready');
   }
 
-  run() {
-    console.log('ready');
+  run(client) {
+    console.log(`${client.user.tag} is ready.`);
   }
 }
 

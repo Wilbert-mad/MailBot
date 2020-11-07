@@ -4,18 +4,21 @@ Medieval Server MailBot
 
 # TODO
 
-* [X] src folder
-* [X] main file
   * [X] events folder 
     * [ ] ready
     * [ ] message
-  * [X] commands folder 
-  * [X] structures folder
-    * [X] commands 
-    * [X] events 
-    * [X] client 
+     * [ ] split emit a dm message as "dmMessage"
 
-# functionality 
+# Functionality 
 * [ ] It can sent / create the threads into the staff server.
 * [ ] It can have snippets added / created / removed.
 * [ ] It can move threads into certain departments if needed.
+
+# Snippets Schema
+
+ - type - Array<SnippetData>
+  -  SnippetData {
+    - name: string
+    - description: string max = 2048
+    - id: string
+  }
