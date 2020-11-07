@@ -14,14 +14,24 @@ Medieval Server MailBot
 * [ ] It can have snippets added / created / removed.
 * [ ] It can move threads into certain departments if needed.
 
-# Snippets Schema
+# Server Schema 
+
+ * Departments - Array of DepartmentData
+ * Snippets - [Snippets module](#Snippets-Module)
+
+ - DepartmentData - Object
+  * name: string
+
+  * RoleID: string
+ 
+# Snippets-Module
 
  - type - Array of SnippetData
 
-  -  SnippetData
+  -  SnippetData - Object
 
-    * name: string
+    * name: string, replace spaces by "~". Resolve later
 
-    * description: string max = 2048
+    * description: string, max = 2048
 
     * id: string
