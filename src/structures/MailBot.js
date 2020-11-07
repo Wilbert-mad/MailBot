@@ -5,6 +5,8 @@ const Registrator = require('../utils/Registrator');
 class MailBot extends Client {
   constructor(options = {}) {
     super(options);
+
+    this.Registrator = new Registrator(this);
   }
 
   get prefix() {
@@ -12,8 +14,8 @@ class MailBot extends Client {
   }
 
   ready(token) {
-    Registrator.loadCommands('../commands');
-    Registrator.loadEvents('../events');
+    this.Registrator.loadCommands('../commands');
+    this.Registrator.loadEvents('../events');
     super.login(token);
   }
 }

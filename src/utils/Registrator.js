@@ -1,17 +1,39 @@
 const fs = require('fs').promises;
 const path = require('path');
+const BaseEvent = require('../structures/BaseEvent');
+const BaseCommand = require('../structures/BaseCommand');
 
 class Registrator {
-  static async loadCommands(dir = '') {
-    const filePath = path.join(__dirname, dir);
-    const files = await fs.readdir(filePath);
-    console.log(files);
+  constructor(client) {
+    Object.defineProperty(this, 'client', { value: client });
   }
 
-  static async loadEvents(dir = '') {
+  async loadCommands(dir = '') {
     const filePath = path.join(__dirname, dir);
     const files = await fs.readdir(filePath);
-    console.log(files);
+    for (const file of files) {
+      if (file.endsWith('.js')) {
+        const Command = require(path.join(filePath, file));
+        if (Command.prototype instanceof BaseCommand) {
+          const command = new Command();
+          console.log(command);
+        }
+      }
+    }
+  }
+
+  async loadEvents(dir = '') {
+    const filePath = path.join(__dirname, dir);
+    const files = await fs.readdir(filePath);
+    for (const file of files) {
+      if (file.endsWith('.js')) {
+        const Event = require(path.join(filePath, file));
+        if (Event.prototype instanceof BaseEvent) {
+          const event = new Event();
+          this.client.on(event.name, event.run.bind(event, this.client));
+        }
+      }
+    }
   }
 }
 
