@@ -7,6 +7,7 @@ class ReadyEvent extends BaseEvent {
 
   run(client) {
     console.log(`${client.user.tag} is ready.`);
+    client.user.setActivity(`people in my DMs 🍁`);
   }
 }
 
