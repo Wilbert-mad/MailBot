@@ -16,9 +16,14 @@ Medieval Server MailBot
 
 # Snippets Schema
 
- - type - Array<SnippetData>
+ - type - Array of SnippetData
+
   -  SnippetData {
-    - name: string
-    - description: string max = 2048
-    - id: string
+
+    * name: string
+
+    * description: string max = 2048
+
+    * id: string
+
   }
