@@ -1,5 +1,6 @@
 const { Client } = require('discord.js');
-const { PREFIX } = require('../../configs');
+const { PREFIX, MONGO_URL } = require('../../configs');
+const { connect, connection } = require('mongoose');
 const Registrator = require('../utils/Registrator');
 
 class MailBot extends Client {
@@ -14,6 +15,10 @@ class MailBot extends Client {
   }
 
   ready(token) {
+    connect(MONGO_URL);
+    connection.on('connected', () => {
+      console.log('DB connected');
+    });
     this.Registrator.loadCommands('../commands');
     this.Registrator.loadEvents('../events');
     super.login(token);
