@@ -4,17 +4,19 @@ Medieval Server MailBot
 
 # TODO
 
-- [] init
-- [] install discord.js
-- [] configs file
-- [] install eslint
-- [] set up eslint and eslint rules
+* [x] init
+* [X] install discord.js
+* [X] configs file
+* [X] install eslint
+* [X] set up eslint and eslint rules
 
-- [] main file
-  - [] events folder 
-    - [] ready
-    - [] message
-  - [] commands folder 
-  - [] structuers folder
-    - [] commands 
-    - [] events 
+* [X] src folder
+* [X] main file
+  * [] events folder 
+    * [] ready
+    * [] message
+  * [] commands folder 
+  * [X] structures folder
+    * [] commands 
+    * [] events 
+    * [X] client 
