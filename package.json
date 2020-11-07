@@ -19,7 +19,8 @@
   },
   "homepage": "https://github.com/Medieval-Development/MailBot#readme",
   "dependencies": {
-    "discord.js": "^12.4.1"
+    "discord.js": "^12.4.1",
+    "mongoose": "^5.10.13"
   },
   "devDependencies": {
     "eslint": "^7.13.0"
