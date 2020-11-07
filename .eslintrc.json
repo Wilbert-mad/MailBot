@@ -21,6 +21,7 @@
         "no-mixed-requires": "error",
         "no-new-require": "error",
         "no-path-concat": "error",
+        "array-bracket-spacing": "error",
         "block-spacing": "error",
         "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
         "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 1, "maxBOF": 0 }],
