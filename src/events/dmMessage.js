@@ -1,5 +1,6 @@
 const { MessageEmbed, Collection } = require('discord.js');
 const BaseEvent = require('../structures/BaseEvent');
+const ms = require('ms');
 
 const setChannelLink = (client, userTicket, newParent = null) => {
   let id = '';
@@ -87,6 +88,7 @@ class ReadyEvent extends BaseEvent {
   }
 
   registerSubCommands() {
+    // replay to theater
     this.subcommands.set('reply', {
       aliases: ['r'],
       async run(msg, args, user, ...otherDate) {
@@ -98,16 +100,28 @@ class ReadyEvent extends BaseEvent {
         await user.send(reply).then(m => m.delete({ timeout: 10000 }));
       }
     });
-
+    // replay anonymous to theater
     this.subcommands.set('anonymous-reply', {
       aliases: ['ar'],
       async run(msg, args, user, ...otherDate) {
         const reply = new MessageEmbed()
-          .setAuthor(msg.client.username, msg.client.avatarURL())
+          .setAuthor(msg.client.user.username, msg.client.user.avatarURL())
           .setDescription(args.join(' '))
           .setColor(otherDate.theaterColor)
           .setTimestamp();
         await user.send(reply).then(m => m.delete({ timeout: 10000 }));
+      }
+    });
+
+    this.subcommands.set('close', {
+      aliases: ['c'],
+      async run(msg, [time], user, ...otherData) {
+        msg.channel.send('Theater hase started closing');
+        console.log(ms(time));
+        console.log(ms(ms(time)));
+        // setTimeout(() => {
+
+        // }, );
       }
     });
   }
