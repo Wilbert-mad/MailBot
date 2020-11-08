@@ -69,7 +69,7 @@ class ReadyEvent extends BaseEvent {
         const subCommand = this.subcommands.get(cmdName.toLowerCase()) || 
           this.subcommands.get(this.subaliases.get(cmdName.toLowerCase()));
         if (subCommand) {
-          await subCommand.run(msg, args, user, theaterColor);
+          await subCommand.run(msg, args, user, theaterColor, messageCollector);
         }
       }
     });
@@ -115,13 +115,11 @@ class ReadyEvent extends BaseEvent {
 
     this.subcommands.set('close', {
       aliases: ['c'],
-      async run(msg, [time], user, ...otherData) {
+      run(msg, [time], user, ...otherData) {
         msg.channel.send('Theater hase started closing');
-        console.log(ms(time));
-        console.log(ms(ms(time)));
-        // setTimeout(() => {
-
-        // }, );
+        setTimeout(() => {
+          otherData.messageCollector.stop('requested');
+        }, ms(time));
       }
     });
   }
