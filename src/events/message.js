@@ -1,6 +1,6 @@
 const BaseEvent = require('../structures/BaseEvent');
 
-class ReadyEvent extends BaseEvent {
+class MessageEvent extends BaseEvent {
   constructor() {
     super('message');
   }
@@ -33,4 +33,4 @@ class ReadyEvent extends BaseEvent {
   }
 }
 
-module.exports = ReadyEvent;
+module.exports = MessageEvent;

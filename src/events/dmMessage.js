@@ -12,7 +12,7 @@ const setChannelLink = (client, userTicket, newParent = null) => {
   return id;
 };
 
-class ReadyEvent extends BaseEvent {
+class DmMessageEvent extends BaseEvent {
   constructor() {
     super('dmMessage');
 
@@ -130,4 +130,4 @@ class ReadyEvent extends BaseEvent {
   }
 }
 
-module.exports = ReadyEvent;
+module.exports = DmMessageEvent;
