@@ -15,7 +15,10 @@ class MailBot extends Client {
   }
 
   ready(token) {
-    connect(MONGO_URL);
+    connect(MONGO_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     connection.on('connected', () => {
       console.log('DB connected');
     });
