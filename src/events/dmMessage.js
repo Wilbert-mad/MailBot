@@ -53,7 +53,7 @@ class DmMessageEvent extends BaseEvent {
       .setDescription(message.content)
       .setFooter(`Message ID: ${message.id}`)
       .setTimestamp();
-    await (await channel.send(embed));
+    await channel.send(embed);
 
     const messageCollector = channel.createMessageCollector((m) => !m.author.bot);
     // collect server sided messages
@@ -113,6 +113,7 @@ class DmMessageEvent extends BaseEvent {
       }
     });
 
+    // close the theater
     this.subcommands.set('close', {
       aliases: ['c'],
       run(msg, [time], user, ...otherData) {
