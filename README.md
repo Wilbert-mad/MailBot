@@ -10,7 +10,7 @@ Medieval Server MailBot
      * [X] split emit a dm message as "dmMessage"
 
 # Functionality 
-* [ ] It can sent / create the threads into the staff server.
+* [X] It can sent / create the threads into the staff server.
 * [ ] It can have snippets added / created / removed.
 * [ ] It can move threads into certain departments if needed.
 

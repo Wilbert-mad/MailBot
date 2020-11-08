@@ -13,6 +13,7 @@ class ReadyEvent extends BaseEvent {
         channelCategoryID: null,
         clamerID: null,
         channelID: null,
+        theaterColor: null,
       });
       return client.emit('dmMessage', message, await client.users.fetch(message.author.id));
     }
