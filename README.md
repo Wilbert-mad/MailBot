@@ -23,6 +23,8 @@ Medieval Server MailBot
   * name: string
 
   * RoleID: string
+
+  * parentID: string (parent channel category id)
  
 # Snippets-Module
 

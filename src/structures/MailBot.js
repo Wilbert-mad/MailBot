@@ -1,5 +1,5 @@
-const { Client } = require('discord.js');
-const { PREFIX, MONGO_URL, OWNERS, STAFFSERVER } = require('../../configs');
+const { Client, Collection } = require('discord.js');
+const { PREFIX, MONGO_URL, OWNERS, STAFFSERVER, MIANPARENT } = require('../../configs');
 const { connect, connection } = require('mongoose');
 const Registrator = require('../utils/Registrator');
 const serverSchema = require('../models/serverSchema');
@@ -7,6 +7,10 @@ const serverSchema = require('../models/serverSchema');
 class MailBot extends Client {
   constructor(options = {}) {
     super(options);
+
+    this.commands = new Collection();
+
+    this.aliases = new Collection();
 
     this.Registrator = new Registrator(this);
 
@@ -17,12 +21,19 @@ class MailBot extends Client {
     return PREFIX || '!';
   }
 
+  get mainParent() {
+    return MIANPARENT || undefined;
+  }
+
   get owners() {
     return OWNERS;
   }
 
-  get staffServer() {
-    return this.guilds.fetch(STAFFSERVER);
+  async staffServer() {
+    if (this.guilds.cache.has(STAFFSERVER)) {
+      return this.guilds.cache.get(STAFFSERVER);
+    }
+    return await this.guilds.fetch(STAFFSERVER, true, true);
   }
 
   async database() {
