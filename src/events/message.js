@@ -14,6 +14,7 @@ class MessageEvent extends BaseEvent {
         clamerID: null,
         channelID: null,
         theaterColor: null,
+        closing: false,
       });
       return client.emit('dmMessage', message, await client.users.fetch(message.author.id));
     }
@@ -24,6 +25,8 @@ class MessageEvent extends BaseEvent {
   
     const command = client.commands.get(cmdName.toLowerCase().slice(client.prefix.length)) ||
       client.commands.get(client.aliases.get(cmdName.toLowerCase().slice(client.prefix.length)));
+    
+    if (!command) return;
     
     try {
       await command.run(client, message, args);
