@@ -32,7 +32,7 @@ class Registrator {
       if (file.endsWith('.js')) {
         const Event = require(path.join(filePath, file));
         if (Event.prototype instanceof BaseEvent) {
-          const event = new Event();
+          const event = new Event(this.client);
           this.client.on(event.name, event.run.bind(event, this.client));
         }
       }

@@ -12,6 +12,8 @@ class MailBot extends Client {
 
     this.aliases = new Collection();
 
+    this.dmCache = new Collection();
+
     this.Registrator = new Registrator(this);
 
     this.currentlyOpenTickets = new Map();

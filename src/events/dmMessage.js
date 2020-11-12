@@ -1,5 +1,6 @@
 const { MessageEmbed, Collection } = require('discord.js');
 const BaseEvent = require('../structures/BaseEvent');
+const { stripIndents, oneLine } = require('common-tags');
 const ms = require('ms');
 
 const setChannelLink = (client, userTicket, newParent = null) => {
@@ -13,9 +14,10 @@ const setChannelLink = (client, userTicket, newParent = null) => {
 };
 
 class DmMessageEvent extends BaseEvent {
-  constructor() {
+  constructor(client) {
     super('dmMessage');
 
+    this.client = client;
     /**
      * logic was taken from Wilbert-mad's RinBot configs command
      * {@link https://github.com/Wilbert-mad/RinBot/blob/master/Bot/src/commands/misc/configs.js}
@@ -24,14 +26,16 @@ class DmMessageEvent extends BaseEvent {
     this.subaliases = new Collection();
 
     this.registerSubCommands();
-
+    
     for (const [k, v] of this.subcommands) {
       for (const a of v.aliases) {
         this.subaliases.set(a, k);
       }
     }
-  }
 
+    this.client.dmCache = this.client.dmCache.concat(this.subcommands);
+  }
+  
   async run(client, message, user) {
     if (user.id == client.user.id) return;
     const userTicket = client.currentlyOpenTickets.get(user.id);
@@ -58,33 +62,32 @@ class DmMessageEvent extends BaseEvent {
     const messageCollector = channel.createMessageCollector((m) => !m.author.bot);
     // collect server sided messages
     messageCollector.on('collect', async (msg) => {
-      const [cmdName, ...args] = msg.content.split(new RegExp(/\s+/));
+      const [cmdName, ...args] = msg.content.split(new RegExp(/\s+/g));
       if (cmdName.toLowerCase() == 'mine') {
         userTicket.clamed = true;
         userTicket.clamerID = msg.author.id;
-        return;
+        return msg.channel.send(`Theater clamer set to, ${msg.author.tag} (${msg.author.id})`);
       }
-      if (userTicket.clamerID && userTicket.clamerID == msg.author.id) {
+      if (userTicket.clamerID) {
         if (!cmdName) return;
         const subCommand = this.subcommands.get(cmdName.toLowerCase()) || 
           this.subcommands.get(this.subaliases.get(cmdName.toLowerCase()));
 
         if (subCommand.requireClosingCheck) {
           if (userTicket.closing) {
-            const closingError = new MessageEmbed()
-              .setDescription('This theater is currently closing would you like to cancel closing session?')
-              .setAuthor(msg.client.user.username, msg.client.user.avatarURL())
-              .setColor(theaterColor)
-              .setTimestamp();
-            const waitReaction = await msg.channel.send(closingError);
+            const reactionHolder = await msg.channel.send(oneLine`
+            This theater is currently closing would you like to cancel closing session?
+            `);
             try {
-              await waitReaction.react('✔');
-              await waitReaction.react('❌');
-              const reactioResponse = await waitReaction.awaitReactions((reaction, user) => !user.bot, { time: 10000, error: ['time'] });
-              if (reactioResponse.first().emoji == '✔') {
+              await reactionHolder.react('✔');
+              await reactionHolder.react('❌');
+              const reactioResponse = await reactionHolder.awaitReactions(
+                (reaction, user) => !user.bot, { time: 10000, error: ['time'] }
+              ).first();
+              if (reactioResponse.emoji == '✔') {
                 userTicket.closing = false;
                 return msg.channel.send('Theater closing');
-              } else if (reactioResponse.first().emoji == '❌') {
+              } else if (reactioResponse.emoji == '❌') {
                 userTicket.closing = true;
                 return msg.channel.send('Theater now opened');
               }
@@ -94,6 +97,8 @@ class DmMessageEvent extends BaseEvent {
             }
           }
         }
+
+        if (subCommand.clamerOnly && userTicket.clamerID !== msg.author.id) return; 
         
         if (subCommand) {
           await subCommand.run(msg, args, user, 
@@ -101,6 +106,8 @@ class DmMessageEvent extends BaseEvent {
               theaterColor, 
               messageCollector,
               userTicket,
+              staffServer,
+              subcommands: this.subcommands
             }
           );
         }
@@ -124,6 +131,7 @@ class DmMessageEvent extends BaseEvent {
     // replay to theater
     this.subcommands.set('reply', {
       aliases: ['r'],
+      clamerOnly: true,
       requireClosingCheck: true,
       async run(msg, args, user, otherData) {
         const reply = new MessageEmbed()
@@ -139,6 +147,7 @@ class DmMessageEvent extends BaseEvent {
     // replay anonymous to theater
     this.subcommands.set('anonymous-reply', {
       aliases: ['ar'],
+      clamerOnly: true,
       requireClosingCheck: true,
       async run(msg, args, user, otherData) {
         const reply = new MessageEmbed()
@@ -155,12 +164,15 @@ class DmMessageEvent extends BaseEvent {
     // close the theater
     this.subcommands.set('close', {
       aliases: ['c'],
+      clamerOnly: true,
       run(msg, [time], user, otherData) {
         if (!otherData.userTicket.closing) {
           msg.channel.send('Theater has started closing');
           otherData.userTicket.closing = true;
           if (!time) time = '1h';
-          setTimeout(() => {
+          msg.client.setTimeout(async () => {
+            const channel = otherData.staffServer.channels.fetch(otherData.userTicket.channelID);
+            await channel.delete();
             otherData.messageCollector.stop('requested');
           }, ms(time));
         } else {
@@ -171,6 +183,7 @@ class DmMessageEvent extends BaseEvent {
 
     this.subcommands.set('delete', {
       aliases: ['del'],
+      clamerOnly: true,
       async run(msg, [ID], user) {
         const dmMessages = user.dmChannel.messages.cache;
         const message = dmMessages.get(ID);
@@ -186,10 +199,11 @@ class DmMessageEvent extends BaseEvent {
     // tranfer theater
     this.subcommands.set('~tranfer-theater', {
       aliases: ['~tt'],
+      clamerOnly: true,
       run(msg, args, user, otherData) {
         const newUser = msg.mentions.users.first() || msg.client.users.fetch(args[0]);
         otherData.userTicket.clamerID = newUser.id;
-        return msg.channel.send(`New theater owner set as ${user.tag} (${user.id})`);
+        return msg.channel.send(`New theater owner set. ${newUser.tag} (${newUser.id})`);
       }
     });
 
@@ -206,6 +220,14 @@ class DmMessageEvent extends BaseEvent {
         );
       }
     });
+
+    this.subcommands.set('help', {
+      aliases: ['h'],
+      async run(msg, [command], user, otherData) {
+        const commandOrCommands = createHelpSatisfyer(command, otherData.subcommands, msg.client.user.avatarURL());
+        await msg.channel.send(commandOrCommands);
+      }
+    });
   }
 
   setTheaterColor(ticket) {
@@ -214,4 +236,39 @@ class DmMessageEvent extends BaseEvent {
   }
 }
 
+const createHelpSatisfyer = (command, subcommands, img) => {
+  const embed = new MessageEmbed()
+    .setThumbnail(img)
+    .setDescription(oneLine`
+    Failed to generate commands list or this commands is not found as a valid commands/aliases command.
+    `);
+  const helpCommands = [];
+  if (!command) {
+    for (const [name, value] of subcommands) {
+      helpCommands.push(stripIndents`
+      __**Name:** ${name}__
+      **Aliases:** ${value.aliases.length ? (value.aliases.map(a => Indent(a)).join(', ')) : 'No aliases for this command'}\n
+      **Clamer only:** ${value.clamerOnly ? 'Require' : 'Not require'}
+      `);
+    }
+    embed.setDescription(helpCommands.join('\n\n'));
+  } else {
+    for (const [name, value] of subcommands) {
+      if (name === command || value.aliases.includes(command)) {
+        embed.setDescription(stripIndents`
+        __**Name: **__ ${name}
+        **Aliases:** ${value.aliases.length ? (value.aliases.map(a => Indent(a)).join(', ')) : 'No aliases for this command'}\n
+        **Clamer only:** ${value.clamerOnly ? 'Require' : 'Not require'}
+        `);
+        break;
+      }
+      continue;
+    }
+  }
+  return embed;
+};
+
 module.exports = DmMessageEvent;
+module.exports.createHelpSatisfyer = createHelpSatisfyer;
+
+function Indent(str) { return `\`${str}\``; }
