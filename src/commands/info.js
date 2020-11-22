@@ -7,7 +7,7 @@ class Info extends BaseCommand {
 
   async run(client, message) {
     await message.channel.send('Getting Info...').then(async (m) => {
-      await (m.edit('Got info on me!n/This bot was made by The Mauve-Development Teamn/Xa_Puppet & Jonfirexbox'));
+      await (m.edit('Got info on me!\nThis bot was made by The Mauve-Development Team\nXa_Puppet & Jonfirexbox'));
     });
   }
 }
