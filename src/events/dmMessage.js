@@ -26,7 +26,7 @@ class DmMessageEvent extends BaseEvent {
     this.subaliases = new Collection();
 
     this.registerSubCommands();
-    
+
     for (const [k, v] of this.subcommands) {
       for (const a of v.aliases) {
         this.subaliases.set(a, k);
@@ -35,7 +35,7 @@ class DmMessageEvent extends BaseEvent {
 
     this.client.dmCache = this.client.dmCache.concat(this.subcommands);
   }
-  
+
   async run(client, message, user) {
     if (user.id == client.user.id) return;
     const userTicket = client.currentlyOpenTickets.get(user.id);
@@ -70,9 +70,9 @@ class DmMessageEvent extends BaseEvent {
       }
       if (userTicket.clamerID) {
         if (!cmdName) return;
-        const subCommand = this.subcommands.get(cmdName.toLowerCase()) || 
-          this.subcommands.get(this.subaliases.get(cmdName.toLowerCase()));
+        const subCommand = this.subcommands.get(cmdName.toLowerCase()) || this.subcommands.get(this.subaliases.get(cmdName.toLowerCase()));
 
+        if (!subCommand.requireClosingCheck) subCommand.requireClosingCheck = false;
         if (subCommand.requireClosingCheck) {
           if (userTicket.closing) {
             const reactionHolder = await msg.channel.send(oneLine`
@@ -81,9 +81,7 @@ class DmMessageEvent extends BaseEvent {
             try {
               await reactionHolder.react('✔');
               await reactionHolder.react('❌');
-              const reactioResponse = await reactionHolder.awaitReactions(
-                (reaction, user) => !user.bot, { time: 10000, error: ['time'] }
-              ).first();
+              const reactioResponse = await reactionHolder.awaitReactions((reaction, user) => !user.bot, { time: 10000, error: ['time'] }).first();
               if (reactioResponse.emoji == '✔') {
                 userTicket.closing = false;
                 return msg.channel.send('Theater closing');
@@ -98,18 +96,16 @@ class DmMessageEvent extends BaseEvent {
           }
         }
 
-        if (subCommand.clamerOnly && userTicket.clamerID !== msg.author.id) return; 
-        
+        if (subCommand.clamerOnly && userTicket.clamerID !== msg.author.id) return;
+
         if (subCommand) {
-          await subCommand.run(msg, args, user, 
-            {
-              theaterColor, 
-              messageCollector,
-              userTicket,
-              staffServer,
-              subcommands: this.subcommands
-            }
-          );
+          await subCommand.run(msg, args, user, {
+            theaterColor,
+            messageCollector,
+            userTicket,
+            staffServer,
+            subcommands: this.subcommands,
+          });
         }
       }
     });
@@ -140,9 +136,9 @@ class DmMessageEvent extends BaseEvent {
           .setColor(otherData.theaterColor)
           .setFooter(`Message ID: ${msg.id}`)
           .setTimestamp();
-        await user.send(reply).then(m => m.delete({ timeout: 10000 }));
+        await user.send(reply);
         await msg.channel.send(reply);
-      }
+      },
     });
     // replay anonymous to theater
     this.subcommands.set('anonymous-reply', {
@@ -156,9 +152,9 @@ class DmMessageEvent extends BaseEvent {
           .setColor(otherData.theaterColor)
           .setFooter(`Message ID: ${msg.id}`)
           .setTimestamp();
-        await user.send(reply).then(m => m.delete({ timeout: 10000 }));
+        await user.send(reply);
         await msg.channel.send(reply);
-      }
+      },
     });
 
     // close the theater
@@ -171,14 +167,14 @@ class DmMessageEvent extends BaseEvent {
           otherData.userTicket.closing = true;
           if (!time) time = '1h';
           msg.client.setTimeout(async () => {
-            const channel = otherData.staffServer.channels.fetch(otherData.userTicket.channelID);
+            const channel = otherData.staffServer.channels.cache.get(otherData.userTicket.channelID);
             await channel.delete();
             otherData.messageCollector.stop('requested');
           }, ms(time));
         } else {
           return msg.channel.send('This Theater is already closing');
         }
-      }
+      },
     });
 
     this.subcommands.set('delete', {
@@ -187,13 +183,32 @@ class DmMessageEvent extends BaseEvent {
       async run(msg, [ID], user) {
         const dmMessages = user.dmChannel.messages.cache;
         const message = dmMessages.get(ID);
+        console.log(dmMessages);
+        console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+        console.log(message);
         if (message && message.author.id == msg.client.user.id) {
           await message.delete();
           return await msg.channel.send(`Message hase been deleted. content: ${message.content} (${message.id})`);
         } else {
           return await msg.channel.send('This message is not found or not yours!');
         }
-      }
+      },
+    });
+
+    this.subcommands.set('edit', {
+      aliases: [],
+      clamerOnly: true,
+      async run(msg, [ID, ...args], user) {
+        const dmMessages = user.dmChannel.messages.cache;
+        const message = dmMessages.get(ID);
+        console.log(dmMessages);
+        console.log(message);
+        if (message && message.author.id == msg.client.user.id) {
+          await message.edit(args.join(' '));
+        } else {
+          return await msg.channel.send('This message is not found or not yours!');
+        }
+      },
     });
 
     // tranfer theater
@@ -204,21 +219,27 @@ class DmMessageEvent extends BaseEvent {
         const newUser = msg.mentions.users.first() || msg.client.users.fetch(args[0]);
         otherData.userTicket.clamerID = newUser.id;
         return msg.channel.send(`New theater owner set. ${newUser.tag} (${newUser.id})`);
-      }
+      },
     });
 
     // tranfer data
     this.subcommands.set('~theater-data', {
       aliases: ['~data', '~td'],
       run(msg, args, user, otherData) {
-        msg.channel.send(JSON.stringify(Object.assign({ 
-          theaterColor: otherData.theaterColor
-        }, otherData.userTicket), null, 4), 
-        { 
-          code: 'js',
-        }
+        const datastring = JSON.stringify(
+          Object.assign(
+            {
+              theaterColor: otherData.theaterColor,
+            },
+            otherData.userTicket
+          ),
+          null,
+          4
         );
-      }
+        msg.channel.send(datastring, {
+          code: 'js',
+        });
+      },
     });
 
     this.subcommands.set('help', {
@@ -226,7 +247,18 @@ class DmMessageEvent extends BaseEvent {
       async run(msg, [command], user, otherData) {
         const commandOrCommands = createHelpSatisfyer(command, otherData.subcommands, msg.client.user.avatarURL());
         await msg.channel.send(commandOrCommands);
-      }
+      },
+    });
+
+    this.subcommands.set('test', {
+      aliases: [],
+      run(msg, [ID], user) {
+        const message = user.dmChannel.messages.cache.get(ID);
+        const ms = message.channel.messages;
+        console.log(message);
+        console.log('~~~~~~~~~~~~~~~~~~~~~~');
+        console.log(ms);
+      },
     });
   }
 
@@ -237,9 +269,7 @@ class DmMessageEvent extends BaseEvent {
 }
 
 const createHelpSatisfyer = (command, subcommands, img) => {
-  const embed = new MessageEmbed()
-    .setThumbnail(img)
-    .setDescription(oneLine`
+  const embed = new MessageEmbed().setThumbnail(img).setDescription(oneLine`
     Failed to generate commands list or this commands is not found as a valid commands/aliases command.
     `);
   const helpCommands = [];
@@ -247,7 +277,7 @@ const createHelpSatisfyer = (command, subcommands, img) => {
     for (const [name, value] of subcommands) {
       helpCommands.push(stripIndents`
       __**Name:** ${name}__
-      **Aliases:** ${value.aliases.length ? (value.aliases.map(a => Indent(a)).join(', ')) : 'No aliases for this command'}\n
+      **Aliases:** ${value.aliases.length ? value.aliases.map((a) => Indent(a)).join(', ') : 'No aliases for this command'}\n
       **Clamer only:** ${value.clamerOnly ? 'Require' : 'Not require'}
       `);
     }
@@ -257,7 +287,7 @@ const createHelpSatisfyer = (command, subcommands, img) => {
       if (name === command || value.aliases.includes(command)) {
         embed.setDescription(stripIndents`
         __**Name: **__ ${name}
-        **Aliases:** ${value.aliases.length ? (value.aliases.map(a => Indent(a)).join(', ')) : 'No aliases for this command'}\n
+        **Aliases:** ${value.aliases.length ? value.aliases.map((a) => Indent(a)).join(', ') : 'No aliases for this command'}\n
         **Clamer only:** ${value.clamerOnly ? 'Require' : 'Not require'}
         `);
         break;
@@ -271,4 +301,6 @@ const createHelpSatisfyer = (command, subcommands, img) => {
 module.exports = DmMessageEvent;
 module.exports.createHelpSatisfyer = createHelpSatisfyer;
 
-function Indent(str) { return `\`${str}\``; }
+function Indent(str) {
+  return `\`${str}\``;
+}
