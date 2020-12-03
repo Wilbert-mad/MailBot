@@ -181,6 +181,7 @@ class DmMessageEvent extends BaseEvent {
       aliases: ['del'],
       clamerOnly: true,
       async run(msg, [ID], user) {
+        // TODO: fix get message and filter off user messages from dm's
         const dmMessages = user.dmChannel.messages.cache;
         const message = dmMessages.get(ID);
         console.log(dmMessages);
@@ -199,6 +200,7 @@ class DmMessageEvent extends BaseEvent {
       aliases: [],
       clamerOnly: true,
       async run(msg, [ID, ...args], user) {
+        // TODO: fix get message and filter off user messages from dm's
         const dmMessages = user.dmChannel.messages.cache;
         const message = dmMessages.get(ID);
         console.log(dmMessages);
@@ -253,6 +255,7 @@ class DmMessageEvent extends BaseEvent {
     this.subcommands.set('test', {
       aliases: [],
       run(msg, [ID], user) {
+        //* falowing for test feching user dm messages
         const message = user.dmChannel.messages.cache.get(ID);
         const ms = message.channel.messages;
         console.log(message);
