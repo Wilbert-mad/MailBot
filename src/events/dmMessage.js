@@ -255,7 +255,7 @@ class DmMessageEvent extends BaseEvent {
     this.subcommands.set('test', {
       aliases: [],
       run(msg, [ID], user) {
-        //* falowing for test feching user dm messages
+        //* folowing for test feching user dm messages
         const message = user.dmChannel.messages.cache.get(ID);
         const ms = message.channel.messages;
         console.log(message);
