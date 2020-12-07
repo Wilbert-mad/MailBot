@@ -1,0 +1,18 @@
+{
+  "editor.formatOnSave": false,
+  "[typescript]": {
+    "editor.formatOnSave": true
+  },
+  "[json]": {
+    "editor.quickSuggestions": {
+      "strings": true
+    },
+    "editor.formatOnSave": true,
+    "editor.suggest.insertMode": "replace"
+  },
+  "prettier.singleQuote": true,
+  "prettier.bracketSpacing": true,
+  "prettier.useEditorConfig": true,
+  "prettier.printWidth": 180,
+  "prettier.semi": true,
+}

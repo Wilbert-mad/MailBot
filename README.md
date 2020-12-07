@@ -10,19 +10,22 @@ Medieval Server MailBot
      * [X] split emit a dm message as "dmMessage"
 
 # Functionality 
-* [ ] It can sent / create the threads into the staff server.
+* [X] It can sent / create the threads into the staff server.
 * [ ] It can have snippets added / created / removed.
 * [ ] It can move threads into certain departments if needed.
 
 # Server Schema 
 
- * Departments - Array of DepartmentData
+ * Departments - Array of [DepartmentData](#Department-Data)
  * Snippets - [Snippets module](#Snippets-Module)
 
+# Department-Data
  - DepartmentData - Object
-  * name: string
+    * name: string
 
-  * RoleID: string
+    * RoleID: string
+
+    * parentID: string (parent channel category id)
  
 # Snippets-Module
 
@@ -30,8 +33,13 @@ Medieval Server MailBot
 
   -  SnippetData - Object
 
-    * name: string, replace spaces by "~". Resolve later
+```yml
+    //! separator will be replaced by "%" instead of "`" 
+  name: string, replace spaces by "~". Resolve later
 
-    * description: string, max = 2048
+    //! "max" is the max length the discord embed description can be   
+  description: string, max = 2048
 
-    * id: string
+    // random snippet id
+  id: string
+```

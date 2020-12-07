@@ -4,4 +4,5 @@ module.exports = {
   OWNERS: [''],
   PREFIX: '',
   STAFFSERVER: '',
+  MIANPARENT: '',
 };

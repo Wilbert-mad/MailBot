@@ -7,6 +7,13 @@ class ReadyEvent extends BaseEvent {
 
   run(client) {
     console.log(`${client.user.tag} is ready.`);
+    client.user.setPresence({
+      status: 'online',
+      activity: {
+        name: 'people in my DMs 🍁',
+        type: 'WATCHING'
+      }
+    });
   }
 }
 

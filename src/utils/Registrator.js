@@ -16,7 +16,10 @@ class Registrator {
         const Command = require(path.join(filePath, file));
         if (Command.prototype instanceof BaseCommand) {
           const command = new Command();
-          console.log(command);
+          this.client.commands.set(command.name, command);
+          command.aliases.forEach(alias => {
+            this.client.aliases.set(alias, command.name);
+          });
         }
       }
     }
@@ -29,7 +32,7 @@ class Registrator {
       if (file.endsWith('.js')) {
         const Event = require(path.join(filePath, file));
         if (Event.prototype instanceof BaseEvent) {
-          const event = new Event();
+          const event = new Event(this.client);
           this.client.on(event.name, event.run.bind(event, this.client));
         }
       }
