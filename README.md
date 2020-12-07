@@ -33,11 +33,13 @@ Medieval Server MailBot
 
   -  SnippetData - Object
 
-      //! separator will be replaced by "%" instead of "`" 
-    * name: string, replace spaces by "~". Resolve later
+```yml
+    //! separator will be replaced by "%" instead of "`" 
+  name: string, replace spaces by "~". Resolve later
 
-      //! "max" is the max length the discord embed description can be   
-    * description: string, max = 2048
+    //! "max" is the max length the discord embed description can be   
+  description: string, max = 2048
 
-      // random snippet id
-    * id: string
+    // random snippet id
+  id: string
+```
