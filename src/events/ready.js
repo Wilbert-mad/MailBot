@@ -10,7 +10,7 @@ class ReadyEvent extends BaseEvent {
     client.user.setPresence({
       status: 'online',
       activity: {
-        name: 'people in my DMs 🍁',
+        name: 'people in my DMs 🎄', //Might want to change this every season!
         type: 'WATCHING'
       }
     });
