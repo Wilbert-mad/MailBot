@@ -13,7 +13,7 @@ class BaseCommand {
     this.category = category || 'misc';
     this.guildOnly = options.guildOnly || true;
     this.owner = options.owner || false;
-    this.memberPermissions = options.memberPermissions || [];
+    this.permissions = options.permissions;
   }
   
   async run(client, message, args) { // eslint-disable-line no-unused-vars, require-await
@@ -31,5 +31,5 @@ module.exports = BaseCommand;
  * @property {string} usage Commands usage
  * @property {boolean} [guildOnly] Guild Only Command
  * @property {boolean} [owner] Owner Only Command
- * @property {import('discord.js').PermissionResolvable[]} memberPermissions Member permission needed
+ * @property {PermissionGuard} [permissions] Member permission needed
  */

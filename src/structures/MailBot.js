@@ -20,15 +20,31 @@ class MailBot extends Client {
   }
 
   get prefix() {
-    return PREFIX || '!';
+    if (PREFIX.length > 0) {
+      return PREFIX;
+    }
+    return '!';
   }
 
   get mainParent() {
-    return MIANPARENT || undefined;
+    if (MIANPARENT.length > 0) {
+      return MIANPARENT;
+    }
+    return null;
   }
 
   get owners() {
-    return OWNERS;
+    if (OWNERS.length > 0) {
+      return OWNERS;
+    }
+    return null;
+  }
+
+  isOwner(user) {
+    if (!this.owners) return false;
+    user = this.users.resolve(user);
+    if (this.owners.includes(user.id)) return true;
+    return false;
   }
 
   async staffServer() {

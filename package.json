@@ -1,6 +1,6 @@
 {
   "name": "mailbot",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Mauve Server MailBot",
   "main": "src/index.js",
   "scripts": {
