@@ -71,6 +71,7 @@ class DmMessageEvent extends BaseEvent {
       if (userTicket.clamerID) {
         if (!cmdName) return;
         const subCommand = this.subcommands.get(cmdName.toLowerCase()) || this.subcommands.get(this.subaliases.get(cmdName.toLowerCase()));
+        if (!subCommand) return;
 
         if (!subCommand.requireClosingCheck) subCommand.requireClosingCheck = false;
         if (subCommand.requireClosingCheck) {
@@ -150,10 +151,11 @@ class DmMessageEvent extends BaseEvent {
           .setAuthor(msg.client.user.username, msg.client.user.avatarURL())
           .setDescription(args.join(' '))
           .setColor(otherData.theaterColor)
-          .setFooter(`Message ID: ${msg.id}`)
           .setTimestamp();
-        await user.send(reply);
-        await msg.channel.send(reply);
+        await user.send(reply).then(async (m) => {
+          reply.setFooter(`Message ID: ${m.id}`);
+          await msg.channel.send(reply);
+        });
       },
     });
 
@@ -182,16 +184,12 @@ class DmMessageEvent extends BaseEvent {
       clamerOnly: true,
       async run(msg, [ID], user) {
         // TODO: fix get message and filter off user messages from dm's
-        const dmMessages = user.dmChannel.messages.cache;
-        const message = dmMessages.get(ID);
-        console.log(dmMessages);
-        console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-        console.log(message);
-        if (message && message.author.id == msg.client.user.id) {
-          await message.delete();
-          return await msg.channel.send(`Message hase been deleted. content: ${message.content} (${message.id})`);
-        } else {
-          return await msg.channel.send('This message is not found or not yours!');
+        try {
+          const dmMessages = user.dmChannel.messages;
+          await dmMessages.delete(ID);
+        } catch (error) {
+          console.log(error);
+          return msg.channel.send('There was an error trying to delete this message');
         }
       },
     });
@@ -201,11 +199,8 @@ class DmMessageEvent extends BaseEvent {
       clamerOnly: true,
       async run(msg, [ID, ...args], user) {
         // TODO: fix get message and filter off user messages from dm's
-        const dmMessages = user.dmChannel.messages.cache;
-        const message = dmMessages.get(ID);
-        console.log(dmMessages);
-        console.log(message);
-        if (message && message.author.id == msg.client.user.id) {
+        const message = await user.dmChannel.messages.fetch(ID);
+        if (message && message.author.id !== msg.client.user.id) {
           await message.edit(args.join(' '));
         } else {
           return await msg.channel.send('This message is not found or not yours!');
@@ -239,7 +234,7 @@ class DmMessageEvent extends BaseEvent {
           4
         );
         msg.channel.send(datastring, {
-          code: 'js',
+          code: 'json',
         });
       },
     });
@@ -252,15 +247,16 @@ class DmMessageEvent extends BaseEvent {
       },
     });
 
-    this.subcommands.set('test', {
+    this.subcommands.set('get', {
       aliases: [],
-      run(msg, [ID], user) {
+      async run(msg, [ID], user) {
         //* folowing for test feching user dm messages
-        const message = user.dmChannel.messages.cache.get(ID);
-        const ms = message.channel.messages;
+        const message = await user.dmChannel.messages.fetch(ID);
+        if (!message) return msg.reply('Message not found! :(');
         console.log(message);
-        console.log('~~~~~~~~~~~~~~~~~~~~~~');
-        console.log(ms);
+        msg.channel.send(JSON.stringify(message, null, 4), {
+          code: 'json'
+        });
       },
     });
   }
